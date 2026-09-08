@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JAUVEXA AI - Your Intelligent AI Partner for the Future</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for futuristic icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Rajdhani:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js" type="module"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js" type="module"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js" type="module"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        gold: {
+                            100: '#FFF9E6',
+                            300: '#FFE082',
+                            400: '#FFD54F',
+                            500: '#FFC107',
+                            600: '#FFB300',
+                            700: '#FFA000',
+                            800: '#FF8F00',
+                            900: '#D4AF37', // Metallic Gold
+                            accent: '#F5D061'
+                        },
+                        darkbg: '#0A0A0C',
+                        darkcard: '#121217',
+                        darkborder: '#24242E'
+                    },
+                    fontFamily: {
+                        orbitron: ['Orbitron', 'sans-serif'],
+                        rajdhani: ['Rajdhani', 'sans-serif'],
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'gold-glow': '0 0 20px rgba(212, 175, 55, 0.35)',
+                        'gold-glow-lg': '0 0 35px rgba(212, 175, 55, 0.5)',
+                        'gold-glow-sm': '0 0 10px rgba(212, 175, 55, 0.25)',
+                    },
+                    animation: {
+                        'pulse-glow': 'pulseGlow 3s infinite alternate',
+                        'float': 'float 6s ease-in-out infinite',
+                        'spin-slow': 'spin 12s linear infinite',
+                    },
+                    keyframes: {
+                        pulseGlow: {
+                            '0%': { boxShadow: '0 0 15px rgba(212, 175, 55, 0.2)' },
+                            '100%': { boxShadow: '0 0 35px rgba(212, 175, 55, 0.6)' }
+                        },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-10px)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0A0A0C;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #24242E;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #D4AF37;
+        }
+        .gold-gradient-text {
+            background: linear-gradient(135deg, #FFF0B3 0%, #D4AF37 50%, #997A15 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .glass-panel {
+            background: rgba(18, 18, 23, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(212, 175, 55, 0.15);
+        }
+        .glass-panel-gold {
+            background: rgba(212, 175, 55, 0.05);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+        }
+    </style>
+</head>
+<body class="bg-darkbg text-gray-200 font-sans antialiased min-h-screen flex flex-col selection:bg-gold-900 selection:text-black">
+
+    <!-- SPLASH SCREEN -->
+    <div id="splash-screen" class="fixed inset-0 z-50 bg-black flex flex-col items-center justify-center transition-opacity duration-700">
+        <div class="relative flex items-center justify-center mb-6">
+            <div class="w-32 h-32 rounded-full border-2 border-gold-900/30 animate-spin-slow absolute"></div>
+            <div class="w-24 h-24 rounded-full border-2 border-t-gold-500 border-r-transparent border-b-gold-900 border-l-transparent animate-spin absolute"></div>
+            <div class="w-16 h-16 bg-gradient-to-tr from-gold-900 via-yellow-500 to-gold-300 rounded-2xl flex items-center justify-center shadow-gold-glow animate-float">
+                <i class="fa-solid font-orbitron text-2xl text-black font-black">J</i>
+            </div>
+        </div>
+        <h1 class="font-orbitron font-extrabold text-3xl tracking-widest gold-gradient-text mb-2">JAUVEXA AI</h1>
+        <p class="font-rajdhani text-gray-400 text-sm tracking-wider uppercase">Your Intelligent AI Partner for the Future</p>
+        <div class="mt-8 w-48 h-1 bg-darkborder rounded-full overflow-hidden">
+            <div id="splash-bar" class="h-full bg-gradient-to-r from-gold-700 to-gold-300 w-0 transition-all duration-1000 ease-out"></div>
+        </div>
+    </div>
+
+    <!-- AUTHENTICATION MODAL -->
+    <div id="auth-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="glass-panel p-6 md:p-8 rounded-2xl border border-gold-500/30 max-w-md w-full relative">
+            <h2 id="auth-title" class="font-orbitron font-bold text-xl gold-gradient-text mb-2 text-center">Login to Jauvexa AI</h2>
+            <p class="text-xs text-gray-400 text-center mb-6">Enter your credentials to access your personal workspace</p>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-orbitron text-gold-400 mb-1">Email Address</label>
+                    <input id="auth-email" type="email" placeholder="user@domain.com" class="w-full bg-darkbg border border-darkborder rounded-xl p-3 text-xs text-gray-200 focus:border-gold-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-orbitron text-gold-400 mb-1">Password</label>
+                    <input id="auth-password" type="password" placeholder="••••••••" class="w-full bg-darkbg border border-darkborder rounded-xl p-3 text-xs text-gray-200 focus:border-gold-500 focus:outline-none">
+                </div>
+                <button id="auth-primary-btn" class="w-full py-3 rounded-xl bg-gradient-to-r from-gold-900 to-gold-500 text-black font-orbitron font-bold text-xs uppercase tracking-wider shadow-gold-glow hover:opacity-90 transition">
+                    Sign In
+                </button>
+                <div class="flex items-center justify-between text-xs text-gray-400 pt-2">
+                    <button id="toggle-auth-mode" class="hover:text-gold-400 transition">Need an account? Sign Up</button>
+                    <button id="close-auth-modal" class="hover:text-gold-400 transition">Continue as Guest</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN WRAPPER -->
+    <div id="app-container" class="flex-1 flex flex-col md:flex-row h-screen overflow-hidden opacity-0 transition-opacity duration-500">
+        
+        <!-- SIDEBAR NAVIGATION -->
+        <aside id="sidebar" class="w-full md:w-72 bg-darkcard border-r border-darkborder flex flex-col z-30 fixed md:relative inset-y-0 transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out">
+            <!-- App Header -->
+            <div class="p-5 border-b border-darkborder flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-gold-900 to-gold-400 flex items-center justify-center shadow-gold-glow-sm">
+                        <span class="font-orbitron font-extrabold text-black text-xl">J</span>
+                    </div>
+                    <div>
+                        <h2 class="font-orbitron font-bold text-lg leading-none gold-gradient-text">JAUVEXA</h2>
+                        <span class="text-[10px] font-rajdhani tracking-widest text-gold-500 font-semibold uppercase">INTELLIGENCE</span>
+                    </div>
+                </div>
+                <button id="close-sidebar-btn" class="md:hidden text-gray-400 hover:text-white">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+
+            <!-- New Chat Button -->
+            <div class="p-4">
+                <button id="new-chat-btn" class="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-gold-900 via-gold-600 to-gold-500 text-black font-orbitron font-semibold text-xs tracking-wider uppercase shadow-gold-glow hover:opacity-90 transition flex items-center justify-center space-x-2">
+                    <i class="fa-solid fa-plus text-sm"></i>
+                    <span>New Cyber Chat</span>
+                </button>
+            </div>
+
+            <!-- Navigation Links -->
+            <nav class="px-3 py-2 space-y-1 font-rajdhani text-sm font-semibold tracking-wide">
+                <button data-nav="dashboard" class="nav-link w-full px-4 py-2.5 rounded-lg flex items-center space-x-3 text-gold-400 bg-gold-900/10 border border-gold-900/30 transition">
+                    <i class="fa-solid fa-house text-base w-5 text-center"></i>
+                    <span>Dashboard</span>
+                </button>
+                <button data-nav="chat" class="nav-link w-full px-4 py-2.5 rounded-lg flex items-center space-x-3 text-gray-400 hover:text-gold-300 hover:bg-white/5 transition">
+                    <i class="fa-solid fa-robot text-base w-5 text-center"></i>
+                    <span>AI Assistant</span>
+                </button>
+                <button data-nav="code" class="nav-link w-full px-4 py-2.5 rounded-lg flex items-center space-x-3 text-gray-400 hover:text-gold-300 hover:bg-white/5 transition">
+                    <i class="fa-solid fa-code text-base w-5 text-center"></i>
+                    <span>Code Studio</span>
+                </button>
+                <button data-nav="student" class="nav-link w-full px-4 py-2.5 rounded-lg flex items-center space-x-3 text-gray-400 hover:text-gold-300 hover:bg-white/5 transition">
+                    <i class="fa-solid fa-graduation-cap text-base w-5 text-center"></i>
+                    <span>Student Hub</span>
+                </button>
+                <button data-nav="creative" class="nav-link w-full px-4 py-2.5 rounded-lg flex items-center space-x-3 text-gray-400 hover:text-gold-300 hover:bg-white/5 transition">
+                    <i class="fa-solid fa-wand-magic-sparkles text-base w-5 text-center"></i>
+                    <span>Creative Tools</span>
+                </button>
+                <button data-nav="image" class="nav-link w-full px-4 py-2.5 rounded-lg flex items-center space-x-3 text-gray-400 hover:text-gold-300 hover:bg-white/5 transition">
+                    <i class="fa-solid fa-image text-base w-5 text-center"></i>
+                    <span>Image Generator</span>
+                </button>
+            </nav>
+
+            <!-- Chat History List -->
+            <div class="px-4 mt-4 mb-2 flex items-center justify-between">
+                <span class="text-[11px] font-orbitron uppercase text-gray-500 tracking-wider">Recent Logs</span>
+                <i class="fa-solid fa-clock-rotate-left text-xs text-gray-500"></i>
+            </div>
+            <div id="history-list" class="flex-1 overflow-y-auto px-3 space-y-1 font-sans text-xs">
+                <div class="p-3 text-center text-gray-500 text-xs italic">No chat logs saved</div>
+            </div>
+
+            <!-- Profile & Settings Footer -->
+            <div class="p-3 border-t border-darkborder bg-black/40 space-y-2">
+                <button data-nav="profile" class="nav-link w-full p-2.5 rounded-xl bg-darkcard border border-darkborder flex items-center justify-between hover:border-gold-900/50 transition group">
+                    <div class="flex items-center space-x-3">
+                        <div id="user-avatar" class="w-8 h-8 rounded-full bg-gold-900/20 text-gold-400 flex items-center justify-center font-bold text-xs border border-gold-900/40">
+                            JX
+                        </div>
+                        <div class="text-left">
+                            <div id="user-display-name" class="text-xs font-semibold text-gray-200 group-hover:text-gold-400 transition">Guest Explorer</div>
+                            <div class="text-[10px] text-gray-500">JAUVEXA v2.5 Online</div>
+                        </div>
+                    </div>
+                    <i class="fa-solid fa-gear text-gray-400 text-xs group-hover:text-gold-400 transition"></i>
+                </button>
+                
+                <button data-nav="about" class="nav-link w-full py-1.5 text-center text-[11px] text-gray-500 hover:text-gold-400 transition font-rajdhani font-semibold tracking-wider uppercase">
+                    About Developer & App
+                </button>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT AREA -->
+        <main class="flex-1 flex flex-col h-full overflow-hidden relative">
+            
+            <!-- TOP BAR -->
+            <header class="h-16 border-b border-darkborder bg-darkcard/80 backdrop-blur-md px-4 flex items-center justify-between z-20">
+                <div class="flex items-center space-x-3">
+                    <button id="open-sidebar-btn" class="md:hidden text-gray-300 hover:text-gold-400 p-2">
+                        <i class="fa-solid fa-bars text-lg"></i>
+                    </button>
+                    <h1 id="page-title" class="font-orbitron font-bold text-base md:text-lg text-gold-400 flex items-center gap-2">
+                        <i class="fa-solid fa-table-columns text-sm text-gold-500"></i>
+                        <span>Dashboard</span>
+                    </h1>
+                </div>
+
+                <div class="flex items-center space-x-3">
+                    <!-- Auth Trigger Btn -->
+                    <button id="open-auth-btn" class="px-3 py-1.5 rounded-lg border border-gold-500/30 text-gold-400 hover:bg-gold-900/20 text-xs font-orbitron transition flex items-center gap-2">
+                        <i class="fa-solid fa-user-lock"></i>
+                        <span id="auth-btn-label">Account</span>
+                    </button>
+
+                    <!-- Language selector -->
+                    <select id="lang-select" class="bg-darkbg text-xs font-rajdhani border border-darkborder rounded-lg px-2 py-1.5 text-gold-400 focus:outline-none focus:border-gold-500">
+                        <option value="English">EN - English</option>
+                        <option value="Spanish">ES - Español</option>
+                        <option value="French">FR - Français</option>
+                        <option value="German">DE - Deutsch</option>
+                        <option value="Hindi">HI - हिन्दी</option>
+                        <option value="Arabic">AR - العربية</option>
+                        <option value="Japanese">JA - 日本語</option>
+                    </select>
+                </div>
+            </header>
+
+            <!-- DYNAMIC VIEW PANELS -->
+            <div id="view-container" class="flex-1 overflow-y-auto p-4 md:p-6 relative">
+                
+                <!-- VIEW 1: DASHBOARD -->
+                <section id="view-dashboard" class="space-y-6 max-w-6xl mx-auto">
+                    <!-- Banner -->
+                    <div class="relative rounded-2xl overflow-hidden glass-panel-gold p-6 md:p-8 border border-gold-900/40">
+                        <div class="absolute -right-10 -bottom-10 w-64 h-64 bg-gold-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                        <div class="relative z-10 max-w-2xl">
+                            <span class="inline-block px-3 py-1 rounded-full bg-gold-900/30 text-gold-300 font-orbitron text-[10px] uppercase tracking-widest border border-gold-500/30 mb-3">
+                                Next-Gen Intelligence
+                            </span>
+                            <h2 class="font-orbitron text-2xl md:text-4xl font-black text-white mb-3 leading-tight">
+                                Welcome to <span class="gold-gradient-text">JAUVEXA AI</span>
+                            </h2>
+                            <p class="text-gray-300 text-sm md:text-base mb-6 font-rajdhani font-medium leading-relaxed">
+                                Accelerate learning, coding, brainstorming, and real-time live search intelligence through high-performance neural compute.
+                            </p>
+                            <div class="flex flex-wrap gap-3">
+                                <button data-start-prompt="What are the latest technology news today?" class="dashboard-quick-btn px-4 py-2.5 rounded-xl bg-gold-900/30 hover:bg-gold-900/50 border border-gold-500/40 text-gold-300 text-xs font-semibold font-orbitron flex items-center space-x-2 transition">
+                                    <i class="fa-solid fa-globe"></i>
+                                    <span>Real-time Live News</span>
+                                </button>
+                                <button data-start-prompt="Generate a Python script for web scraping" class="dashboard-quick-btn px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-darkborder text-gray-300 text-xs font-semibold font-orbitron flex items-center space-x-2 transition">
+                                    <i class="fa-solid fa-terminal text-gold-500"></i>
+                                    <span>Python Automation</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- AI Tool Cards -->
+                    <div>
+                        <h3 class="font-orbitron font-bold text-sm tracking-widest uppercase text-gray-400 mb-4">Core Cyber Modules</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                            
+                            <div data-nav="chat" class="tool-card glass-panel p-5 rounded-2xl cursor-pointer hover:border-gold-500/60 transition group relative overflow-hidden">
+                                <div class="w-12 h-12 rounded-xl bg-gold-900/20 border border-gold-500/30 flex items-center justify-center text-gold-400 mb-4 group-hover:scale-110 transition">
+                                    <i class="fa-solid fa-comments text-xl"></i>
+                                </div>
+                                <h4 class="font-orbitron font-bold text-base text-white group-hover:text-gold-400 transition mb-1">AI Chat Engine</h4>
+                                <p class="text-xs text-gray-400">Live Web Search Grounding, Science, Business, and Q&A.</p>
+                            </div>
+
+                            <div data-nav="code" class="tool-card glass-panel p-5 rounded-2xl cursor-pointer hover:border-gold-500/60 transition group relative overflow-hidden">
+                                <div class="w-12 h-12 rounded-xl bg-gold-900/20 border border-gold-500/30 flex items-center justify-center text-gold-400 mb-4 group-hover:scale-110 transition">
+                                    <i class="fa-solid fa-code text-xl"></i>
+                                </div>
+                                <h4 class="font-orbitron font-bold text-base text-white group-hover:text-gold-400 transition mb-1">Code Studio</h4>
+                                <p class="text-xs text-gray-400">Generate, refactor & debug JS, Python, HTML/CSS, C++, Java.</p>
+                            </div>
+
+                            <div data-nav="student" class="tool-card glass-panel p-5 rounded-2xl cursor-pointer hover:border-gold-500/60 transition group relative overflow-hidden">
+                                <div class="w-12 h-12 rounded-xl bg-gold-900/20 border border-gold-500/30 flex items-center justify-center text-gold-400 mb-4 group-hover:scale-110 transition">
+                                    <i class="fa-solid fa-graduation-cap text-xl"></i>
+                                </div>
+                                <h4 class="font-orbitron font-bold text-base text-white group-hover:text-gold-400 transition mb-1">Student Hub</h4>
+                                <p class="text-xs text-gray-400">Exam prep, study notes, formula solving, and concept breakdowns.</p>
+                            </div>
+
+                            <div data-nav="creative" class="tool-card glass-panel p-5 rounded-2xl cursor-pointer hover:border-gold-500/60 transition group relative overflow-hidden">
+                                <div class="w-12 h-12 rounded-xl bg-gold-900/20 border border-gold-500/30 flex items-center justify-center text-gold-400 mb-4 group-hover:scale-110 transition">
+                                    <i class="fa-solid fa-wand-magic-sparkles text-xl"></i>
+                                </div>
+                                <h4 class="font-orbitron font-bold text-base text-white group-hover:text-gold-400 transition mb-1">Creative Suite</h4>
+                                <p class="text-xs text-gray-400">Write scripts, viral captions, ad copy, and creative ideas.</p>
+                            </div>
+
+                        </div>
+                    </div>
+                </section>
+
+                <!-- VIEW 2: AI CHAT SCREEN -->
+                <section id="view-chat" class="hidden h-full flex flex-col max-w-5xl mx-auto">
+                    <div id="chat-messages" class="flex-1 overflow-y-auto space-y-4 pr-2 mb-4">
+                        <div class="flex items-start space-x-3">
+                            <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-gold-900 to-gold-400 flex items-center justify-center text-black font-black text-sm flex-shrink-0 mt-1">J</div>
+                            <div class="glass-panel p-4 rounded-2xl rounded-tl-none max-w-2xl border border-gold-900/30">
+                                <p class="text-xs font-orbitron font-bold text-gold-400 mb-1">JAUVEXA AI</p>
+                                <p class="text-sm text-gray-200 leading-relaxed">System online. I am JAUVEXA AI, developed by Mohd Jaun Rizvi. Equipped with Google Grounding for real-time live answers. How can I help you today?</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Chat Input Bar -->
+                    <div class="glass-panel p-2 md:p-3 rounded-2xl border border-darkborder focus-within:border-gold-500/50 transition flex flex-col gap-2">
+                        <div class="flex items-center space-x-2">
+                            <button id="voice-input-btn" title="Voice Input" class="w-10 h-10 rounded-xl bg-darkbg text-gray-400 hover:text-gold-400 border border-darkborder flex items-center justify-center transition">
+                                <i class="fa-solid fa-microphone text-sm"></i>
+                            </button>
+
+                            <textarea id="chat-input" rows="1" placeholder="Ask JAUVEXA anything..." class="flex-1 bg-transparent text-sm text-gray-100 focus:outline-none resize-none py-2 px-1"></textarea>
+
+                            <button id="tts-toggle" title="Read Aloud Audio" class="w-10 h-10 rounded-xl bg-darkbg text-gray-400 hover:text-gold-400 border border-darkborder flex items-center justify-center transition">
+                                <i class="fa-solid fa-volume-high text-sm"></i>
+                            </button>
+
+                            <button id="send-chat-btn" class="w-10 h-10 rounded-xl bg-gradient-to-tr from-gold-900 to-gold-500 text-black flex items-center justify-center shadow-gold-glow hover:opacity-90 transition">
+                                <i class="fa-solid fa-paper-plane text-sm"></i>
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- VIEW 3: CODE STUDIO -->
+                <section id="view-code" class="hidden space-y-6 max-w-5xl mx-auto">
+                    <div class="glass-panel p-6 rounded-2xl border border-darkborder">
+                        <h2 class="font-orbitron font-bold text-lg text-white mb-2 flex items-center gap-2">
+                            <i class="fa-solid fa-code text-gold-400"></i>
+                            <span>Developer Code Studio</span>
+                        </h2>
+                        <p class="text-xs text-gray-400 mb-4">Generate clean, optimized code or request debugging help in multiple programming languages.</p>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+                            <div>
+                                <label class="block text-[11px] font-orbitron text-gray-400 mb-1">Language</label>
+                                <select id="code-lang" class="w-full bg-darkbg text-xs border border-darkborder rounded-xl p-2.5 text-gold-400 focus:border-gold-500 focus:outline-none">
+                                    <option value="JavaScript">JavaScript</option>
+                                    <option value="Python">Python</option>
+                                    <option value="HTML/CSS">HTML & CSS</option>
+                                    <option value="Java">Java</option>
+                                    <option value="C++">C++</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-orbitron text-gray-400 mb-1">Action</label>
+                                <select id="code-action" class="w-full bg-darkbg text-xs border border-darkborder rounded-xl p-2.5 text-gold-400 focus:border-gold-500 focus:outline-none">
+                                    <option value="Generate Code">Generate Solution</option>
+                                    <option value="Debug Code">Debug & Fix Errors</option>
+                                    <option value="Explain Code">Explain Line-by-Line</option>
+                                    <option value="Optimize Code">Optimize Performance</option>
+                                </select>
+                            </div>
+                            <div class="flex items-end">
+                                <button id="run-code-gen" class="w-full py-2.5 rounded-xl bg-gold-900 hover:bg-gold-800 text-black font-orbitron font-bold text-xs uppercase tracking-wider transition shadow-gold-glow">
+                                    Execute Request
+                                </button>
+                            </div>
+                        </div>
+
+                        <textarea id="code-prompt" rows="4" placeholder="Describe the function, script, or paste broken code here..." class="w-full bg-darkbg border border-darkborder rounded-xl p-3 text-sm text-gray-200 focus:border-gold-500 focus:outline-none resize-none mb-4 font-mono"></textarea>
+                    </div>
+
+                    <div id="code-output-container" class="hidden glass-panel p-6 rounded-2xl border border-darkborder">
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-xs font-orbitron text-gold-400 font-bold uppercase">Code Output</span>
+                            <button id="copy-code-btn" class="text-xs text-gray-400 hover:text-gold-400 font-rajdhani flex items-center gap-1">
+                                <i class="fa-solid fa-copy"></i> Copy Snippet
+                            </button>
+                        </div>
+                        <pre id="code-output" class="bg-black/80 p-4 rounded-xl text-xs font-mono text-green-400 overflow-x-auto border border-darkborder"></pre>
+                    </div>
+                </section>
+
+                <!-- VIEW 4: STUDENT HUB -->
+                <section id="view-student" class="hidden space-y-6 max-w-5xl mx-auto">
+                    <div class="glass-panel p-6 rounded-2xl border border-darkborder">
+                        <h2 class="font-orbitron font-bold text-lg text-white mb-2 flex items-center gap-2">
+                            <i class="fa-solid fa-graduation-cap text-gold-400"></i>
+                            <span>Student Neural Assistant</span>
+                        </h2>
+                        <p class="text-xs text-gray-400 mb-6">Simplifying academics: STEM problems, study timetables, and concise revisions.</p>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                            <button data-student-mode="Explain Concept" class="student-mode-btn p-4 rounded-xl bg-darkbg border border-darkborder hover:border-gold-500/50 text-left transition">
+                                <i class="fa-solid fa-lightbulb text-gold-400 text-lg mb-2"></i>
+                                <h4 class="text-xs font-orbitron font-bold text-white">Concept Explainer</h4>
+                                <p class="text-[11px] text-gray-500 mt-1">Break complex topics into simple terms.</p>
+                            </button>
+                            <button data-student-mode="Study Plan" class="student-mode-btn p-4 rounded-xl bg-darkbg border border-darkborder hover:border-gold-500/50 text-left transition">
+                                <i class="fa-solid fa-calendar-days text-gold-400 text-lg mb-2"></i>
+                                <h4 class="text-xs font-orbitron font-bold text-white">Exam Study Plan</h4>
+                                <p class="text-[11px] text-gray-500 mt-1">Structured schedule for upcoming exams.</p>
+                            </button>
+                            <button data-student-mode="Math Problem" class="student-mode-btn p-4 rounded-xl bg-darkbg border border-darkborder hover:border-gold-500/50 text-left transition">
+                                <i class="fa-solid fa-square-root-variable text-gold-400 text-lg mb-2"></i>
+                                <h4 class="text-xs font-orbitron font-bold text-white">Math & Science Solver</h4>
+                                <p class="text-[11px] text-gray-500 mt-1">Step-by-step mathematical solutions.</p>
+                            </button>
+                        </div>
+
+                        <div class="space-y-3">
+                            <input id="student-subject" type="text" placeholder="Subject or Topic (e.g. Organic Chemistry, Calculus, World War II)..." class="w-full bg-darkbg border border-darkborder rounded-xl p-3 text-xs text-gray-200 focus:border-gold-500 focus:outline-none">
+                            <textarea id="student-prompt" rows="3" placeholder="Enter specific question or exam syllabus details..." class="w-full bg-darkbg border border-darkborder rounded-xl p-3 text-xs text-gray-200 focus:border-gold-500 focus:outline-none resize-none"></textarea>
+                            <button id="generate-student-btn" class="w-full py-3 rounded-xl bg-gold-900 text-black font-orbitron font-bold text-xs uppercase tracking-wider transition shadow-gold-glow">
+                                Process Study Module
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="student-output-box" class="hidden glass-panel p-6 rounded-2xl border border-darkborder">
+                        <h3 class="text-xs font-orbitron text-gold-400 font-bold uppercase mb-3">Study Notes & Breakdown</h3>
+                        <div id="student-output" class="text-xs text-gray-300 leading-relaxed whitespace-pre-wrap"></div>
+                    </div>
+                </section>
+
+                <!-- VIEW 5: CREATIVE SUITE -->
+                <section id="view-creative" class="hidden space-y-6 max-w-5xl mx-auto">
+                    <div class="glass-panel p-6 rounded-2xl border border-darkborder">
+                        <h2 class="font-orbitron font-bold text-lg text-white mb-2 flex items-center gap-2">
+                            <i class="fa-solid fa-wand-magic-sparkles text-gold-400"></i>
+                            <span>Creative Content Engine</span>
+                        </h2>
+                        <p class="text-xs text-gray-400 mb-6">Empowering creators: Generate video scripts, social media captions, blog posts, and marketing hooks.</p>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label class="block text-[11px] font-orbitron text-gray-400 mb-1">Content Type</label>
+                                <select id="creative-type" class="w-full bg-darkbg text-xs border border-darkborder rounded-xl p-2.5 text-gold-400 focus:border-gold-500 focus:outline-none">
+                                    <option value="YouTube Script">YouTube / Reel Script</option>
+                                    <option value="Social Media Captions">Viral Captions & Hashtags</option>
+                                    <option value="Blog Outline">Article / Blog Post</option>
+                                    <option value="Product Pitch">Creative Marketing Copy</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-orbitron text-gray-400 mb-1">Tone & Vibe</label>
+                                <select id="creative-tone" class="w-full bg-darkbg text-xs border border-darkborder rounded-xl p-2.5 text-gold-400 focus:border-gold-500 focus:outline-none">
+                                    <option value="Futuristic & Energetic">Futuristic & Energetic</option>
+                                    <option value="Professional & Elegant">Professional & Elegant</option>
+                                    <option value="Humorous & Casual">Humorous & Casual</option>
+                                    <option value="Inspirational">Inspirational & Empowering</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <textarea id="creative-prompt" rows="3" placeholder="Briefly describe what you want to create..." class="w-full bg-darkbg border border-darkborder rounded-xl p-3 text-xs text-gray-200 focus:border-gold-500 focus:outline-none resize-none mb-4"></textarea>
+
+                        <button id="generate-creative-btn" class="w-full py-3 rounded-xl bg-gold-900 text-black font-orbitron font-bold text-xs uppercase tracking-wider transition shadow-gold-glow">
+                            Generate Creative Asset
+                        </button>
+                    </div>
+
+                    <div id="creative-output-box" class="hidden glass-panel p-6 rounded-2xl border border-darkborder">
+                        <div class="flex justify-between items-center mb-3">
+                            <h3 class="text-xs font-orbitron text-gold-400 font-bold uppercase">Generated Copy</h3>
+                            <button id="copy-creative-btn" class="text-xs text-gray-400 hover:text-gold-400 font-rajdhani">
+                                <i class="fa-solid fa-copy"></i> Copy Text
+                            </button>
+                        </div>
+                        <div id="creative-output" class="text-xs text-gray-200 leading-relaxed whitespace-pre-wrap font-sans"></div>
+                    </div>
+                </section>
+
+                <!-- VIEW 6: IMAGE GENERATOR -->
+                <section id="view-image" class="hidden space-y-6 max-w-5xl mx-auto">
+                    <div class="glass-panel p-6 rounded-2xl border border-darkborder">
+                        <h2 class="font-orbitron font-bold text-lg text-white mb-2 flex items-center gap-2">
+                            <i class="fa-solid fa-image text-gold-400"></i>
+                            <span>AI Neural Synthesizer (Imagen 4)</span>
+                        </h2>
+                        <p class="text-xs text-gray-400 mb-4">Transform text descriptions into futuristic visual artwork.</p>
+
+                        <div class="flex gap-2 mb-4">
+                            <input id="image-prompt" type="text" placeholder="e.g. A futuristic luxury cybernetic city with black and gold glowing skyscrapers..." class="flex-1 bg-darkbg border border-darkborder rounded-xl p-3 text-xs text-gray-200 focus:border-gold-500 focus:outline-none">
+                            <button id="generate-image-btn" class="px-6 py-3 rounded-xl bg-gold-900 text-black font-orbitron font-bold text-xs uppercase tracking-wider transition shadow-gold-glow flex-shrink-0">
+                                Synthesize
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="image-result-box" class="hidden glass-panel p-6 rounded-2xl border border-darkborder text-center">
+                        <div id="image-loader" class="py-12 space-y-3">
+                            <i class="fa-solid fa-spinner animate-spin text-3xl text-gold-400"></i>
+                            <p class="text-xs font-orbitron text-gold-300">Rendering high-density neural graphics...</p>
+                        </div>
+                        <img id="generated-img" class="hidden max-h-[500px] mx-auto rounded-xl border border-gold-900/50 shadow-gold-glow" src="" alt="AI Output">
+                    </div>
+                </section>
+
+                <!-- VIEW 7: PROFILE & SETTINGS -->
+                <section id="view-profile" class="hidden space-y-6 max-w-3xl mx-auto">
+                    <div class="glass-panel p-6 rounded-2xl border border-darkborder">
+                        <div class="flex items-center space-x-4 mb-6">
+                            <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-gold-900 to-gold-400 flex items-center justify-center text-black font-black font-orbitron text-2xl shadow-gold-glow">
+                                JX
+                            </div>
+                            <div>
+                                <h2 id="profile-name" class="font-orbitron font-bold text-xl text-white">Guest User</h2>
+                                <p id="profile-email" class="text-xs text-gray-400">Anonymous Session</p>
+                                <span class="inline-block mt-1 px-2 py-0.5 rounded bg-gold-900/30 text-gold-400 text-[10px] font-orbitron border border-gold-500/30">Tier: JAUVEXA Enterprise</span>
+                            </div>
+                        </div>
+
+                        <div class="border-t border-darkborder pt-6 space-y-4">
+                            <h3 class="text-xs font-orbitron text-gold-400 uppercase tracking-wider">System Settings</h3>
+                            
+                            <div class="flex items-center justify-between p-3 bg-darkbg rounded-xl border border-darkborder">
+                                <div>
+                                    <div class="text-xs font-bold text-gray-200">Google Grounding Web Search</div>
+                                    <div class="text-[10px] text-gray-500">Live internet connection for updated answers</div>
+                                </div>
+                                <span class="text-xs text-green-400 font-orbitron">Enabled</span>
+                            </div>
+
+                            <div class="flex items-center justify-between p-3 bg-darkbg rounded-xl border border-darkborder">
+                                <div>
+                                    <div class="text-xs font-bold text-gray-200">Cloud History Sync</div>
+                                    <div class="text-[10px] text-gray-500">Store logs encrypted in Firebase cloud database</div>
+                                </div>
+                                <span class="text-xs text-green-400 font-orbitron">Active</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- VIEW 8: ABOUT & DEVELOPER -->
+                <section id="view-about" class="hidden space-y-6 max-w-3xl mx-auto">
+                    <div class="glass-panel p-6 md:p-8 rounded-2xl border border-darkborder text-center relative overflow-hidden">
+                        <div class="w-20 h-20 mx-auto mb-4 rounded-2xl bg-gradient-to-tr from-gold-900 via-yellow-500 to-gold-300 flex items-center justify-center text-black font-black text-3xl font-orbitron shadow-gold-glow">
+                            J
+                        </div>
+                        <h2 class="font-orbitron text-2xl font-black gold-gradient-text mb-1">JAUVEXA AI</h2>
+                        <p class="font-rajdhani text-gray-400 text-xs tracking-widest uppercase mb-6">"Your Intelligent AI Partner for the Future."</p>
+
+                        <p class="text-xs text-gray-300 leading-relaxed max-w-xl mx-auto mb-8 font-sans">
+                            JAUVEXA AI is designed to make high-level artificial intelligence accessible to everyone—combining high-speed neural processing, Google Search Grounding for real-time live answers, and high developer productivity.
+                        </p>
+
+                        <div class="p-5 rounded-2xl bg-darkbg border border-gold-900/40 text-left max-w-xl mx-auto relative">
+                            <div class="text-[10px] font-orbitron uppercase text-gold-500 tracking-wider mb-2">Creator Architecture</div>
+                            <h3 class="font-orbitron font-bold text-lg text-white">Mohd Jaun Rizvi</h3>
+                            <p class="text-xs text-gold-400 font-rajdhani font-semibold mb-3">AI Engineer | Web Developer | App Designer | Game Developer</p>
+                            
+                            <!-- Instagram Badge Link -->
+                            <a href="https://instagram.com/syedjaunrizvi" target="_blank" class="inline-flex items-center gap-2 mb-4 px-3 py-1.5 rounded-lg bg-gradient-to-r from-purple-600 to-pink-500 text-white font-orbitron text-xs font-bold shadow-md hover:opacity-90 transition">
+                                <i class="fa-brands fa-instagram text-sm"></i>
+                                <span>@syedjaunrizvi</span>
+                            </a>
+
+                            <p class="text-xs text-gray-400 leading-relaxed mb-4">
+                                Specialist in intelligent systems, next-generation web architectures, responsive cyberpunk UI design, and interactive applications.
+                            </p>
+                            <div class="flex gap-3 text-sm text-gold-400">
+                                <span class="px-2.5 py-1 rounded bg-gold-900/20 border border-gold-500/30 text-[10px] font-orbitron">AI Systems</span>
+                                <span class="px-2.5 py-1 rounded bg-gold-900/20 border border-gold-500/30 text-[10px] font-orbitron">Full Stack</span>
+                                <span class="px-2.5 py-1 rounded bg-gold-900/20 border border-gold-500/30 text-[10px] font-orbitron">UI/UX Crafting</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- MAIN APP LOGIC -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // ==========================================
+        // SINGLE PERMANENT HARDCODED API KEY LOGIC
+        // ==========================================
+        // NOTE: Ye Key ab direct code me secured hai aur user ko kahan dikhegi nahi!
+        const MASTER_API_KEY = ""; 
+
+        if (!localStorage.getItem('jauvexa_secured_key')) {
+            localStorage.setItem('jauvexa_secured_key', MASTER_API_KEY);
+        }
+        
+        function getApiKey() {
+            return localStorage.getItem('jauvexa_secured_key') || MASTER_API_KEY;
+        }
+
+        // ==========================================
+        // FIREBASE REAL CONFIGURATION (REPLACE HERE)
+        // ==========================================
+          const firebaseConfig = {
+  apiKey: "AIzaSyCooHmOoHM1F5_q11XbRzFl0hmVf96Zbxg",
+  authDomain: "jauvexaai-c8f22.firebaseapp.com",
+  databaseURL: "https://jauvexaai-c8f22-default-rtdb.firebaseio.com",
+  projectId: "jauvexaai-c8f22",
+  storageBucket: "jauvexaai-c8f22.firebasestorage.app",
+  messagingSenderId: "939000904562",
+  appId: "1:939000904562:web:98e3d7cc80710b4f667beb",
+  measurementId: "G-571GLPYD0G"
+};
+
+        let auth, db, currentUser = null;
+        try {
+            const app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+        } catch (e) {
+            console.warn("Firebase configuration needs real credentials.");
+        }
+
+        // App State Variables
+        let currentView = 'dashboard';
+        let currentLanguage = 'English';
+        let ttsEnabled = false;
+        let activeStudentMode = 'Explain Concept';
+
+        // DOM Handles
+        const splashScreen = document.getElementById('splash-screen');
+        const splashBar = document.getElementById('splash-bar');
+        const appContainer = document.getElementById('app-container');
+        const sidebar = document.getElementById('sidebar');
+        const openSidebarBtn = document.getElementById('open-sidebar-btn');
+        const closeSidebarBtn = document.getElementById('close-sidebar-btn');
+        const pageTitle = document.getElementById('page-title');
+        const chatMessages = document.getElementById('chat-messages');
+        const chatInput = document.getElementById('chat-input');
+        const sendChatBtn = document.getElementById('send-chat-btn');
+        const historyList = document.getElementById('history-list');
+
+        // Auth UI Modal Elements
+        const authModal = document.getElementById('auth-modal');
+        const openAuthBtn = document.getElementById('open-auth-btn');
+        const authBtnLabel = document.getElementById('auth-btn-label');
+        const closeAuthModal = document.getElementById('close-auth-modal');
+        const toggleAuthMode = document.getElementById('toggle-auth-mode');
+        const authPrimaryBtn = document.getElementById('auth-primary-btn');
+        const authTitle = document.getElementById('auth-title');
+        const authEmail = document.getElementById('auth-email');
+        const authPassword = document.getElementById('auth-password');
+        let isSignUpMode = false;
+
+        // Firebase Auth State Observer
+        if(auth) {
+            onAuthStateChanged(auth, (user) => {
+                currentUser = user;
+                if (user) {
+                    document.getElementById('user-display-name').innerText = user.email ? user.email.split('@')[0] : "User";
+                    document.getElementById('profile-name').innerText = user.email || "User Account";
+                    document.getElementById('profile-email').innerText = "UID: " + user.uid;
+                    authBtnLabel.innerText = "Logout";
+                    loadHistory();
+                } else {
+                    document.getElementById('user-display-name').innerText = "Guest Explorer";
+                    document.getElementById('profile-name').innerText = "Guest User";
+                    document.getElementById('profile-email').innerText = "Anonymous Session";
+                    authBtnLabel.innerText = "Login";
+                }
+            });
+        }
+
+        // Auth Modal Operations
+        openAuthBtn.addEventListener('click', () => {
+            if (currentUser && auth) {
+                signOut(auth).then(() => alert("Logged out successfully!"));
+            } else {
+                authModal.classList.remove('hidden');
+            }
+        });
+
+        closeAuthModal.addEventListener('click', () => authModal.classList.add('hidden'));
+
+        toggleAuthMode.addEventListener('click', () => {
+            isSignUpMode = !isSignUpMode;
+            authTitle.innerText = isSignUpMode ? "Register Jauvexa AI" : "Login to Jauvexa AI";
+            authPrimaryBtn.innerText = isSignUpMode ? "Sign Up" : "Sign In";
+            toggleAuthMode.innerText = isSignUpMode ? "Already have an account? Sign In" : "Need an account? Sign Up";
+        });
+
+        authPrimaryBtn.addEventListener('click', async () => {
+            const email = authEmail.value.trim();
+            const pass = authPassword.value.trim();
+            if (!email || !pass || !auth) return alert("Enter valid credentials or setup Firebase Real Config");
+
+            try {
+                if (isSignUpMode) {
+                    await createUserWithEmailAndPassword(auth, email, pass);
+                    alert("Account created successfully!");
+                } else {
+                    await signInWithEmailAndPassword(auth, email, pass);
+                    alert("Logged in successfully!");
+                }
+                authModal.classList.add('hidden');
+            } catch (err) {
+                alert("Auth Error: " + err.message);
+            }
+        });
+
+        // Initialize App Splash Screen
+        window.addEventListener('load', () => {
+            splashBar.style.width = '100%';
+            setTimeout(() => {
+                splashScreen.classList.add('opacity-0');
+                appContainer.classList.remove('opacity-0');
+                setTimeout(() => splashScreen.classList.add('hidden'), 700);
+            }, 1000);
+        });
+
+        // Navigation Drawer Logic
+        openSidebarBtn.addEventListener('click', () => sidebar.classList.remove('-translate-x-full'));
+        closeSidebarBtn.addEventListener('click', () => sidebar.classList.add('-translate-x-full'));
+
+        document.querySelectorAll('[data-nav]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const navTarget = btn.getAttribute('data-nav');
+                switchView(navTarget);
+                if (window.innerWidth < 768) {
+                    sidebar.classList.add('-translate-x-full');
+                }
+            });
+        });
+
+        function switchView(viewName) {
+            currentView = viewName;
+            ['dashboard', 'chat', 'code', 'student', 'creative', 'image', 'profile', 'about'].forEach(v => {
+                const el = document.getElementById(`view-${v}`);
+                if (el) el.classList.add('hidden');
+            });
+
+            const targetEl = document.getElementById(`view-${viewName}`);
+            if (targetEl) targetEl.classList.remove('hidden');
+
+            const titles = {
+                dashboard: '<i class="fa-solid fa-table-columns text-gold-500"></i> Dashboard',
+                chat: '<i class="fa-solid fa-robot text-gold-500"></i> AI Assistant Engine',
+                code: '<i class="fa-solid fa-code text-gold-500"></i> Code Studio',
+                student: '<i class="fa-solid fa-graduation-cap text-gold-500"></i> Student Hub',
+                creative: '<i class="fa-solid fa-wand-magic-sparkles text-gold-500"></i> Creative Tools',
+                image: '<i class="fa-solid fa-image text-gold-500"></i> Image Generator',
+                profile: '<i class="fa-solid fa-user text-gold-500"></i> Profile & Settings',
+                about: '<i class="fa-solid fa-circle-info text-gold-500"></i> About Jauvexa AI'
+            };
+            pageTitle.innerHTML = titles[viewName] || 'JAUVEXA AI';
+        }
+
+        // API Call with Retry Logic and Grounding Engine Support
+        async function fetchWithRetry(url, options, retries = 3) {
+            let delay = 1000;
+            for (let i = 0; i < retries; i++) {
+                try {
+                    const response = await fetch(url, options);
+                    if (response.ok) return await response.json();
+                } catch (e) {
+                    if (i === retries - 1) throw e;
+                }
+                await new Promise(r => setTimeout(r, delay));
+                delay *= 2;
+            }
+            throw new Error("API Connection Failed");
+        }
+
+        // Gemini AI Engine Integration (Including Google Search Grounding for Live Fast Results)
+        async function callGemini(userPrompt, systemInstruction = "") {
+            const apiKey = getApiKey();
+            const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            
+            // Hardcoded developer identity prompt rule
+            const fullSystemPrompt = `You are JAUVEXA AI. If any user asks "Who developed you?", "Who built you?", or "Tumko kisne develop kiya h?", respond clearly: "Mujhe Mohd Jaun Rizvi ne develop kiya hai. Unki Instagram ID hai @syedjaunrizvi". Answer in ${currentLanguage}. ${systemInstruction}`;
+            
+            const body = {
+                contents: [{ parts: [{ text: userPrompt }] }],
+                systemInstruction: { parts: [{ text: fullSystemPrompt }] },
+                // Enable Google Grounding Search for fast real-time response
+                tools: [{ googleSearch: {} }] 
+            };
+
+            const data = await fetchWithRetry(endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
+
+            return data.candidates?.[0]?.content?.parts?.[0]?.text || "Unable to parse response from Jauvexa Engine.";
+        }
+
+        // Chat View Functions
+        async function handleSendChat() {
+            const text = chatInput.value.trim();
+            if (!text) return;
+
+            appendMessage('user', text);
+            chatInput.value = '';
+
+            const loadingId = appendLoading();
+
+            try {
+                const aiReply = await callGemini(text);
+                removeLoading(loadingId);
+                appendMessage('ai', aiReply);
+
+                if (ttsEnabled) speakText(aiReply);
+                saveChatToFirestore(text, aiReply);
+            } catch (err) {
+                removeLoading(loadingId);
+                appendMessage('ai', "Error connecting to JAUVEXA Neural Network. Verify connection.");
+            }
+        }
+
+        sendChatBtn.addEventListener('click', handleSendChat);
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleSendChat();
+            }
+        });
+
+        function appendMessage(sender, text) {
+            const div = document.createElement('div');
+            if (sender === 'user') {
+                div.className = "flex items-start justify-end space-x-3";
+                div.innerHTML = `
+                    <div class="glass-panel-gold p-4 rounded-2xl rounded-tr-none max-w-2xl border border-gold-500/40 text-gray-100 text-sm leading-relaxed">
+                        ${escapeHtml(text)}
+                    </div>
+                    <div class="w-8 h-8 rounded-lg bg-gold-900/40 border border-gold-500/30 flex items-center justify-center text-gold-400 font-bold text-xs flex-shrink-0 mt-1">U</div>
+                `;
+            } else {
+                div.className = "flex items-start space-x-3";
+                div.innerHTML = `
+                    <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-gold-900 to-gold-400 flex items-center justify-center text-black font-black text-sm flex-shrink-0 mt-1">J</div>
+                    <div class="glass-panel p-4 rounded-2xl rounded-tl-none max-w-2xl border border-gold-900/30">
+                        <p class="text-xs font-orbitron font-bold text-gold-400 mb-1">JAUVEXA AI</p>
+                        <div class="text-sm text-gray-200 leading-relaxed whitespace-pre-wrap">${formatCodeBlocks(text)}</div>
+                    </div>
+                `;
+            }
+            chatMessages.appendChild(div);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function appendLoading() {
+            const id = 'loading-' + Date.now();
+            const div = document.createElement('div');
+            div.id = id;
+            div.className = "flex items-start space-x-3";
+            div.innerHTML = `
+                <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-gold-900 to-gold-400 flex items-center justify-center text-black font-black text-sm flex-shrink-0 mt-1">J</div>
+                <div class="glass-panel p-4 rounded-2xl rounded-tl-none border border-gold-900/30 text-gold-400 text-xs font-orbitron flex items-center gap-2">
+                    <i class="fa-solid fa-circle-notch animate-spin"></i> Grounding Google Search & Fetching Live Response...
+                </div>
+            `;
+            chatMessages.appendChild(div);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            return id;
+        }
+
+        function removeLoading(id) {
+            const el = document.getElementById(id);
+            if (el) el.remove();
+        }
+
+        function escapeHtml(str) {
+            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        }
+
+        function formatCodeBlocks(text) {
+            return text.replace(/```([\s\S]*?)```/g, '<pre class="bg-black/80 p-3 rounded-xl font-mono text-xs text-green-400 border border-darkborder my-2 overflow-x-auto">$1</pre>');
+        }
+
+        // Firestore Chat Persistence
+        async function saveChatToFirestore(userMsg, aiMsg) {
+            if (!db || !currentUser) return;
+            try {
+                const historyCol = collection(db, 'users', currentUser.uid, 'chat_history');
+                await addDoc(historyCol, {
+                    userMessage: userMsg,
+                    aiResponse: aiMsg,
+                    timestamp: serverTimestamp()
+                });
+            } catch (e) {
+                console.warn("Firestore error:", e);
+            }
+        }
+
+        function loadHistory() {
+            if (!db || !currentUser) return;
+            try {
+                const historyCol = collection(db, 'users', currentUser.uid, 'chat_history');
+                onSnapshot(historyCol, (snapshot) => {
+                    historyList.innerHTML = '';
+                    if (snapshot.empty) {
+                        historyList.innerHTML = `<div class="p-3 text-center text-gray-500 text-xs italic">No chat logs saved</div>`;
+                        return;
+                    }
+                    snapshot.docs.forEach(doc => {
+                        const data = doc.data();
+                        const item = document.createElement('button');
+                        item.className = "w-full text-left p-2 rounded-lg hover:bg-white/5 text-gray-400 hover:text-gold-300 transition truncate text-xs block";
+                        item.innerText = data.userMessage || "Saved Session";
+                        item.addEventListener('click', () => {
+                            switchView('chat');
+                            chatMessages.innerHTML = '';
+                            appendMessage('user', data.userMessage);
+                            appendMessage('ai', data.aiResponse);
+                        });
+                        historyList.appendChild(item);
+                    });
+                });
+            } catch (e) {
+                console.warn("History loading error", e);
+            }
+        }
+    </script>
+</body>
+  </html>
